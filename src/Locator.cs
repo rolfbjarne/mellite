@@ -14,6 +14,9 @@ namespace mellite {
 
 		public static List<string> LocateFiles (string root, LocatorOptions options)
 		{
+			if (File.Exists (root))
+				return new [] { root }.ToList ();
+
 			var ignore = options.Ignore.Select (x => Path.Combine (root, x)).ToList ();
 			if (Directory.Exists (root)) {
 				if (options.IgnoreRoot) {

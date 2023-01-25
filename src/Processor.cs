@@ -17,6 +17,7 @@ namespace mellite {
 		StripVerify,
 		ListDefinesDetected,
 		ListDefineUnresolvableFiles,
+		AddImpliedMacCatalystAttributes,
 	};
 
 	public class ProcessOptions {
@@ -69,6 +70,8 @@ namespace mellite {
 					return Converter.Convert (text, options.Defines, options.VerboseConditional, assemblyInfo);
 				case ProcessSteps.StripExistingNET6Attributes:
 					return (new AttributeStripper ()).StripText (text);
+				case ProcessSteps.AddImpliedMacCatalystAttributes:
+					return AttributeAdder.AddMacCatalystAttributes (text, path!);
 				case ProcessSteps.StripConditionBlocks:
 					return (new ConditionBlockStripper ()).StripText (text);
 				case ProcessSteps.StripVerify:

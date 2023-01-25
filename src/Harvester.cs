@@ -227,7 +227,7 @@ namespace mellite {
 					}
 
 					if (trivia.Any (t => t.Contains ("#endif"))) {
-						throw new InvalidOperationException ($"{attributeList} contains conditions that will not be parsed correctly");
+						throw new InvalidOperationException ($"{attributeList.SyntaxTree.GetLineSpan (attributeList.Span)}: {attributeList} contains conditions that will not be parsed correctly");
 					}
 				}
 
@@ -448,6 +448,12 @@ namespace mellite {
 			rest = new SyntaxTriviaList (rest.Reverse ());
 
 			return (new SyntaxTriviaList (nonWhitespaceTrivia), newlines, rest);
+		}
+
+		public static SyntaxTriviaList GetIndentTrivia (SyntaxNode node)
+		{
+			var v = SplitNodeTrivia (node);
+			return v.Item3;
 		}
 	}
 

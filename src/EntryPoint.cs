@@ -12,10 +12,21 @@ namespace mellite {
 	}
 
 	class EntryPoint {
+		static void ComputeInput (List<string> files, IEnumerable<string> unprocessed, LocatorOptions locatorOptions)
+		{
+			foreach (var up in unprocessed) {
+				if (up.StartsWith ('@') && File.Exists (up.Substring (1))) {
+					ComputeInput (files, File.ReadAllLines (up.Substring (1)), locatorOptions);
+				} else {
+					files.AddRange (Locator.LocateFiles (up, locatorOptions));
+				}
+			}
+		}
+
+
 		static void Main (string [] args)
 		{
 			ActionType requestedAction = ActionType.Process;
-			string? path = null;
 			LocatorOptions locatorOptions = new LocatorOptions ();
 			ProcessOptions processOptions = new ProcessOptions ();
 
@@ -35,21 +46,21 @@ namespace mellite {
 				{ "harvest-assembly=", "Process assembly to provide additional context for partial only classes", a => processOptions.AssemblyPath = a },
 				{ "allow-errors", "Instead of crashing on first fatal error, just print and continue.", a => processOptions.AllowErrors = true },
 				{ "add-default-introduced=", "When processing the harvested assembly treat types with no introduced attribute as based upon platform assemblies in this directory (iOS/Mac/Catalyst/TV must all be in this directory).", d => processOptions.AddDefaultIntroducedPath = d },
+				{ "add-implied-maccatalyst-attributes", "", i => processOptions.Step = ProcessSteps.AddImpliedMacCatalystAttributes },
 			};
 
+			var files = new List<string> ();
 			try {
 				IList<string> unprocessed = os.Parse (args);
 				if (requestedAction == ActionType.Help || unprocessed.Count != 1) {
 					ShowHelp (os);
 					return;
 				}
-				path = unprocessed [0];
+				ComputeInput (files, unprocessed, locatorOptions);
 			} catch (Exception e) {
 				Console.Error.WriteLine ($"Could not parse the command line arguments: {e.Message}");
 				return;
 			}
-
-			List<string> files = Locator.LocateFiles (path, locatorOptions);
 
 			switch (requestedAction) {
 			case ActionType.ListFilesToProcess: {
